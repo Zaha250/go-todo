@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	todoModels "go-todo/internal/modules/todo/models"
+	"io"
 	"os"
+	"path"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -73,10 +76,39 @@ func (r *TodoRepository) writeTodos(newTodos []todoModels.Todo) error {
 	return json.NewEncoder(file).Encode(newTodos)
 }
 
+func (r *TodoRepository) dumpDB() error {
+	sourceFile, err := os.Open(r.filePath)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	sourceFileName := strings.TrimSuffix(sourceFile.Name(), path.Ext(r.filePath))
+	destinationFileName := sourceFileName + "_" + time.Now().UTC().Format(time.RFC3339) + ".json"
+
+	destinationFile, err := os.Create(destinationFileName)
+	if err != nil {
+		return err
+	}
+	defer destinationFile.Close()
+
+	_, err = io.Copy(destinationFile, sourceFile)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *TodoRepository) Create(data todoModels.CreateTodo) (todoModels.TodoId, error) {
 	todos, err := r.GetList()
 	if err != nil {
 		return "", err
+	}
+
+	/* Делаем dump перед каждым добавлением записи */
+	dumpErr := r.dumpDB()
+	if dumpErr != nil {
+		return "", dumpErr
 	}
 
 	newTodo := todoModels.Todo{
@@ -95,6 +127,12 @@ func (r *TodoRepository) Delete(id todoModels.TodoId) error {
 	allTodos, err := r.GetList()
 	if err != nil {
 		return err
+	}
+
+	/* Делаем dump перед каждым удалением записи */
+	dumpErr := r.dumpDB()
+	if dumpErr != nil {
+		return dumpErr
 	}
 
 	var filteredTodos []todoModels.Todo
