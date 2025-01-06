@@ -42,7 +42,7 @@ func (r *TodoRepository) GetList() ([]todoModels.Todo, error) {
 	return todos, nil
 }
 
-func (r *TodoRepository) GetById(id string) (*todoModels.Todo, error) {
+func (r *TodoRepository) GetById(id todoModels.TodoId) (*todoModels.Todo, error) {
 	file, err := os.Open(r.filePath)
 	if err != nil {
 		return nil, err
@@ -73,14 +73,14 @@ func (r *TodoRepository) writeTodos(newTodos []todoModels.Todo) error {
 	return json.NewEncoder(file).Encode(newTodos)
 }
 
-func (r *TodoRepository) Create(data todoModels.CreateTodo) (string, error) {
+func (r *TodoRepository) Create(data todoModels.CreateTodo) (todoModels.TodoId, error) {
 	todos, err := r.GetList()
 	if err != nil {
 		return "", err
 	}
 
 	newTodo := todoModels.Todo{
-		Id:        strconv.FormatInt(time.Now().UnixNano(), 10),
+		Id:        todoModels.TodoId(strconv.FormatInt(time.Now().UnixNano(), 10)),
 		Title:     data.Title,
 		Completed: false,
 	}
@@ -89,4 +89,26 @@ func (r *TodoRepository) Create(data todoModels.CreateTodo) (string, error) {
 	writesErr := r.writeTodos(todos)
 
 	return newTodo.Id, writesErr
+}
+
+func (r *TodoRepository) Delete(id todoModels.TodoId) error {
+	allTodos, err := r.GetList()
+	if err != nil {
+		return err
+	}
+
+	var filteredTodos []todoModels.Todo
+	isFound := false
+
+	for _, todo := range allTodos {
+		if todo.Id != id {
+			filteredTodos = append(filteredTodos, todo)
+		} else {
+			isFound = true
+		}
+	}
+	if !isFound {
+		return errors.New(string("Не найдена задача с таким id " + id))
+	}
+	return r.writeTodos(filteredTodos)
 }

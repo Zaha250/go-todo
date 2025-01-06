@@ -45,3 +45,37 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 		"data":   newTodoId,
 	})
 }
+
+func (h *TodoHandler) GetTodoById(c *gin.Context) {
+	todoId := c.Param("id")
+
+	todo, err := h.Service.GetTodoById(todoModels.TodoId(todoId))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+			"data":  nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": true,
+		"data":   todo,
+	})
+}
+
+func (h *TodoHandler) DeleteTodo(c *gin.Context) {
+	todoId := c.Param("id")
+
+	err := h.Service.DeleteTodo(todoModels.TodoId(todoId))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+			"data":  nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": true,
+		"data":   nil,
+	})
+}

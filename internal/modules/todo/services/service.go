@@ -18,13 +18,17 @@ func (s *TodoService) GetTodosList() ([]todoModels.Todo, error) {
 	return s.Repo.GetList()
 }
 
-func (s *TodoService) GetTodoById(todoId string) (*todoModels.Todo, error) {
+func (s *TodoService) GetTodoById(todoId todoModels.TodoId) (*todoModels.Todo, error) {
 	return s.Repo.GetById(todoId)
 }
 
-func (s TodoService) CreateTodo(data todoModels.CreateTodo) (string, error) {
+func (s *TodoService) CreateTodo(data todoModels.CreateTodo) (todoModels.TodoId, error) {
 	if data.Title == "" {
 		return "", errors.New("введите название задачи")
 	}
 	return s.Repo.Create(data)
+}
+
+func (s *TodoService) DeleteTodo(todoId todoModels.TodoId) error {
+	return s.Repo.Delete(todoId)
 }
