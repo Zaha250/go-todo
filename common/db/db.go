@@ -1,7 +1,7 @@
 package db
 
 import (
-	"go-todo/internal/cmd/models"
+	"go-todo/internal/modules/todo/models"
 	"log"
 
 	"gorm.io/driver/postgres"
@@ -15,7 +15,7 @@ func Init(url string) *gorm.DB {
 		log.Fatalln(err)
 	}
 
-	db.AutoMigrate(&models.TodoItem{})
+	db.AutoMigrate(&todoModels.Todo{})
 
 	return db
 }
