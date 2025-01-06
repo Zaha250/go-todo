@@ -5,6 +5,7 @@ import (
 	"errors"
 	todoModels "go-todo/internal/modules/todo/models"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -72,18 +73,20 @@ func (r *TodoRepository) writeTodos(newTodos []todoModels.Todo) error {
 	return json.NewEncoder(file).Encode(newTodos)
 }
 
-func (r *TodoRepository) Create(data todoModels.CreateTodo) error {
+func (r *TodoRepository) Create(data todoModels.CreateTodo) (string, error) {
 	todos, err := r.GetList()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	newTodo := todoModels.Todo{
-		Id:        time.Now().UTC().String(),
+		Id:        strconv.FormatInt(time.Now().UnixNano(), 10),
 		Title:     data.Title,
 		Completed: false,
 	}
 
 	todos = append(todos, newTodo)
-	return r.writeTodos(todos)
+	writesErr := r.writeTodos(todos)
+
+	return newTodo.Id, writesErr
 }

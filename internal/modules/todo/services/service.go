@@ -22,9 +22,9 @@ func (s *TodoService) GetTodoById(todoId string) (*todoModels.Todo, error) {
 	return s.Repo.GetById(todoId)
 }
 
-func (s TodoService) CreateTodo(data todoModels.CreateTodo) error {
+func (s TodoService) CreateTodo(data todoModels.CreateTodo) (string, error) {
 	if data.Title == "" {
-		return errors.New("введите название задачи")
+		return "", errors.New("введите название задачи")
 	}
 	return s.Repo.Create(data)
 }

@@ -15,7 +15,7 @@ func main() {
 
 	router := gin.Default()
 	app := router.Group("/api")
-	//db.Init(dbUrl)
+
 	todo.RegisterHandlers(app)
 
 	router.Run(":" + port)
