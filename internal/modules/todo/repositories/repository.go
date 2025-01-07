@@ -3,6 +3,7 @@ package repositories
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	todoModels "go-todo/internal/modules/todo/models"
 	"io"
 	"os"
@@ -46,17 +47,9 @@ func (r *TodoRepository) GetList() ([]todoModels.Todo, error) {
 }
 
 func (r *TodoRepository) GetById(id todoModels.TodoId) (*todoModels.Todo, error) {
-	file, err := os.Open(r.filePath)
+	todos, err := r.GetList()
 	if err != nil {
 		return nil, err
-	}
-	defer file.Close()
-
-	var todos []todoModels.Todo
-
-	errorDecode := json.NewDecoder(file).Decode(&todos)
-	if errorDecode != nil {
-		return nil, errorDecode
 	}
 
 	for _, todoItem := range todos {
@@ -149,4 +142,35 @@ func (r *TodoRepository) Delete(id todoModels.TodoId) error {
 		return errors.New(string("Не найдена задача с таким id " + id))
 	}
 	return r.writeTodos(filteredTodos)
+}
+
+func (r *TodoRepository) Update(data todoModels.UpdateTodo) error {
+	todos, err := r.GetList()
+	if err != nil {
+		return err
+	}
+
+	dumpErr := r.dumpDB()
+	if dumpErr != nil {
+		return dumpErr
+	}
+
+	for i, todo := range todos {
+		if todo.Id == data.Id {
+			newTodo := todoModels.Todo{
+				Id:        todo.Id,
+				Title:     todo.Title,
+				Completed: data.Completed,
+			}
+			todos[i] = newTodo
+
+			err := r.writeTodos(todos)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+	}
+	return fmt.Errorf("задача с номером %s не найдена", data.Id)
 }

@@ -20,5 +20,6 @@ func RegisterHandlers(router *gin.RouterGroup) {
 		routes.GET("/:id", h.GetTodoById)
 		routes.POST("/", h.CreateTodo)
 		routes.DELETE("/:id", h.DeleteTodo)
+		routes.PATCH("/", h.UpdateTodo)
 	}
 }

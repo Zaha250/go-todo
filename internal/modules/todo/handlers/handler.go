@@ -19,7 +19,10 @@ func (h *TodoHandler) GetTodoList(c *gin.Context) {
 	todos, err := h.Service.GetTodosList()
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":  err.Error(),
+			"status": false,
+		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -35,8 +38,8 @@ func (h *TodoHandler) CreateTodo(c *gin.Context) {
 	newTodoId, createError := h.Service.CreateTodo(data)
 	if createError != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": createError.Error(),
-			"data":  data,
+			"error":  createError.Error(),
+			"status": false,
 		})
 		return
 	}
@@ -52,8 +55,8 @@ func (h *TodoHandler) GetTodoById(c *gin.Context) {
 	todo, err := h.Service.GetTodoById(todoModels.TodoId(todoId))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": err.Error(),
-			"data":  nil,
+			"error":  err.Error(),
+			"status": false,
 		})
 		return
 	}
@@ -69,8 +72,26 @@ func (h *TodoHandler) DeleteTodo(c *gin.Context) {
 	err := h.Service.DeleteTodo(todoModels.TodoId(todoId))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-			"data":  nil,
+			"error":  err.Error(),
+			"status": false,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": true,
+		"data":   nil,
+	})
+}
+
+func (h *TodoHandler) UpdateTodo(c *gin.Context) {
+	var data todoModels.UpdateTodo
+	c.BindJSON(&data)
+
+	err := h.Service.UpdateTodo(data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":  err.Error(),
+			"status": false,
 		})
 		return
 	}

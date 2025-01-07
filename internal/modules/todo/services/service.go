@@ -32,3 +32,7 @@ func (s *TodoService) CreateTodo(data todoModels.CreateTodo) (todoModels.TodoId,
 func (s *TodoService) DeleteTodo(todoId todoModels.TodoId) error {
 	return s.Repo.Delete(todoId)
 }
+
+func (s *TodoService) UpdateTodo(data todoModels.UpdateTodo) error {
+	return s.Repo.Update(data)
+}
